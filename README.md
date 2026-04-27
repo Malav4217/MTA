@@ -1,30 +1,27 @@
 # 🚌 NYC MTA Bus Reliability Tracker
 
-[![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)](https://python.org)
-[![DuckDB](https://img.shields.io/badge/DuckDB-0.9.2-yellow)](https://duckdb.org)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.28-red?logo=streamlit)](https://streamlit.io)
-[![Docker](https://img.shields.io/badge/Docker-Containerized-blue?logo=docker)](https://docker.com)
-[![Tests](https://img.shields.io/badge/Tests-40%20passing-brightgreen)](tests/)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat&logo=python&logoColor=white)](https://python.org)
+[![DuckDB](https://img.shields.io/badge/DuckDB-0.9.2-FFF000?style=flat&logo=duckdb&logoColor=black)](https://duckdb.org)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.28-FF4B4B?style=flat&logo=streamlit&logoColor=white)](https://streamlit.io)
+[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=flat&logo=docker&logoColor=white)](https://docker.com)
+[![pytest](https://img.shields.io/badge/Tests-40%20passing-2ECC71?style=flat&logo=pytest&logoColor=white)](tests/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat)](LICENSE)
 
-> A real-time data engineering pipeline that
-> automatically collects, processes, and analyzes
-> NYC MTA bus performance data — detecting delays,
-> ghost buses, and bus bunching across 4 major routes.
+> A real-time data engineering pipeline that automatically collects, processes, and analyzes NYC MTA bus performance — detecting delays, ghost buses, and bus bunching across 4 major routes.
 
 ---
 
 ## 📊 Key Findings
-*(8 days of continuous data collection)*
+*8 days of continuous data collection — 926,551 arrivals analyzed*
 
 | Metric | Value |
 |--------|-------|
-| Total arrivals analyzed | 926,551+ |
-| System on-time rate | 64.6% |
-| Worst stop avg delay | +16.5 min (Palmetto St/Myrtle Av, Q58) |
-| Ghost buses detected | 45 per day |
-| Worst bunching route | Q58 — 664 events/day (Critical) |
-| False positive reduction | 88% via 3-layer quality filter |
+| 🕐 System on-time rate | **64.6%** |
+| 👻 Ghost buses per day | **45 detected** |
+| 🚌 Worst bunching route | **Q58 — 664 events/day (Critical)** |
+| ⏱️ Worst stop avg delay | **+16.5 min (Palmetto St/Myrtle Av, Q58)** |
+| 🎯 False positive reduction | **88% (342 events → 40 after 3-layer filter)** |
+| 📦 Total arrivals analyzed | **926,551+** |
 
 ---
 
@@ -33,39 +30,39 @@
 ```
 MTA Bus Time API (SIRI)
         │
-        ▼ every 60 seconds
-┌───────────────────┐
-│  Ingestion Layer  │  ingestion/ingest.py
-│  Python + requests│
-└────────┬──────────┘
-         │
-         ▼
-┌───────────────────┐
-│   DuckDB Writer   │  mta_bus.db
-│  raw_bus_snapshots│
-└────────┬──────────┘
-         │
-         ▼
-┌───────────────────┐
-│ Transform Layer   │  transforms/transform.py
-│  • Delay calc     │
-│  • Ghost detect   │
-│  • Bunch detect   │
-└────────┬──────────┘
-         │
-         ▼
-┌───────────────────┐     ┌──────────────────┐
-│  DuckDB Writer    │────▶│  Read Replica    │
-│  bus_arrivals     │copy │  mta_bus_reader  │
-│  ghost_buses      │     │  (dashboard uses)│
-│  bunching_events  │     └────────┬─────────┘
-└───────────────────┘              │
-                                   ▼
-                         ┌──────────────────┐
-                         │ Streamlit Dashboard│
-                         │  5 interactive    │
-                         │  pages — live     │
-                         └──────────────────┘
+        ▼  every 60 seconds
+┌─────────────────────┐
+│   Ingestion Layer   │  ingestion/ingest.py
+│   Python + requests │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│   DuckDB Writer     │  mta_bus.db
+│  raw_bus_snapshots  │
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Transform Layer    │  transforms/transform.py
+│  · Delay calc       │
+│  · Ghost detect     │
+│  · Bunch detect     │
+└──────────┬──────────┘
+           │ atomic copy
+           ▼
+┌─────────────────────┐     ┌──────────────────────┐
+│   DuckDB Writer     │────▶│    Read Replica       │
+│   bus_arrivals      │     │  mta_bus_reader.db    │
+│   ghost_buses       │     │  dashboard reads here │
+│   bunching_events   │     └──────────┬───────────┘
+└─────────────────────┘                │
+                                       ▼
+                            ┌──────────────────────┐
+                            │  Streamlit Dashboard  │
+                            │  5 interactive pages  │
+                            │  localhost:8501       │
+                            └──────────────────────┘
 ```
 
 ---
@@ -73,59 +70,54 @@ MTA Bus Time API (SIRI)
 ## 🔍 What We Detect
 
 ### 👻 Ghost Buses
-A bus that appears in the MTA app with a
-promised arrival time but vanishes before
-reaching the stop — leaving riders stranded.
+A bus appears in the MTA app with a promised arrival time then vanishes before reaching the stop — leaving riders stranded with zero warning.
 
-**Detection:** Track vehicle presence across
-API polls. Flag vehicles that disappear while
-still >500m from their promised stop.
+**Detection logic:** Track vehicle presence across API polls. Flag vehicles that disappear while still more than 500m from their promised stop, with a gap of more than 10 minutes.
+
+> Initial count: **15,648 events** (obviously wrong) → After fixing algorithm: **45 credible detections per day**
 
 ### 🚌 Bus Bunching
-When buses on the same route cluster together
-instead of staying evenly spaced. You wait
-20 minutes then 3 buses arrive at once.
+When buses cluster together instead of staying evenly spaced. You wait 20 minutes then 3 buses arrive at once.
 
-**Detection:** Haversine formula calculates
-distance between all vehicle pairs on same
-route and direction. Flag pairs 50-500m apart.
+**Detection logic:** Haversine formula calculates great-circle distance between all vehicle pairs on same route and direction. Three quality filters applied:
 
-**3-Layer Quality Filter:**
-1. Direction filter — no false positives from
-   buses traveling opposite directions
-2. Duplicate filter — same pair not counted
-   twice within 5-minute window
-3. Minimum distance — 50m threshold eliminates
-   GPS noise (reduced false positives by 88%)
+1. **Direction filter** — same DirectionRef only (eliminates opposite-direction false positives)
+2. **Distance filter** — 50m to 500m range (below 50m = GPS noise, above 500m = not bunching)
+3. **Duplicate filter** — same pair counted once per 5-minute window
+
+> Initial count: **342 events** → After 3-layer filter: **40 real events** (88% reduction)
+
+### ⏱️ Schedule Delays
+Delay in minutes = `expected_arrival - aimed_arrival` from the MTA API, classified into 5 categories: Early, On Time, Slightly Late, Late, Very Late (20+ min).
 
 ---
 
 ## 🖥️ Dashboard Pages
 
 | Page | What It Shows |
-|------|---------------|
-| Overview | KPI cards, route grades, delay distribution |
-| Ghost Bus Tracker | Incidents with vehicle ID, time, distance |
-| Bus Bunching | Severity bars, hourly chart |
-| Route Analysis | Best time to ride, worst stops, comparison |
-| Live Map | Real-time bus positions with route filter |
+|------|--------------|
+| **Overview** | KPI cards, route grades A-F, delay distribution |
+| **Ghost Bus Tracker** | Live incidents with vehicle ID, vanish time, distance |
+| **Bus Bunching** | Severity bars (Critical/High/Medium/Low), hourly chart |
+| **Route Analysis** | Best time to ride, top 5 worst stops, route comparison |
+| **Live Map** | Real-time bus positions with colored route markers |
 
 ---
 
 ## ⚙️ Tech Stack
 
 | Layer | Technology | Purpose |
-|-------|------------|---------|
-| Language | Python 3.11 | Everything |
-| Database | DuckDB 0.9.2 | Analytical storage |
-| Ingestion | requests + schedule | MTA API polling |
-| Transform | Pandas | Data cleaning + detection |
-| Dashboard | Streamlit | Web application |
-| Charts | Plotly | Interactive visualizations |
-| Maps | Folium | Live GPS map |
-| Containers | Docker + Compose | Deployment |
+|-------|-----------|---------|
+| Language | Python 3.11 | All pipeline components |
+| Database | DuckDB 0.9.2 | Zero-config analytical storage |
+| Ingestion | requests + schedule | MTA API polling every 60s |
+| Transform | Pandas | Data cleaning and detection |
+| Dashboard | Streamlit 1.28 | 5-page web application |
+| Charts | Plotly 5.17 | Interactive visualizations |
+| Maps | Folium 0.14 | Live GPS bus positions |
+| Containers | Docker + Compose | One-command deployment |
 | Testing | pytest + pytest-cov | 40 tests, 76% coverage |
-| Orchestration | Apache Airflow DAG | Production ready |
+| Orchestration | Apache Airflow | Production DAG (Linux/cloud) |
 | Logging | Loguru | Structured pipeline logs |
 
 ---
@@ -136,8 +128,8 @@ route and direction. Flag pairs 50-500m apart.
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/yourusername/mta-bus-tracker
-cd mta-bus-tracker
+git clone https://github.com/Malav4217/MTA.git
+cd MTA
 
 # 2. Add your MTA API key
 echo "MTA_API_KEY=your_key_here" > .env
@@ -146,11 +138,15 @@ echo "MTA_API_KEY=your_key_here" > .env
 docker-compose up -d
 
 # 4. Open dashboard
-open http://localhost:8501
+# http://localhost:8501
 ```
 
-That's it. Pipeline starts collecting data
-immediately. Dashboard updates every 60 seconds.
+That's it. The pipeline starts collecting data immediately. Dashboard updates every 60 seconds.
+
+### Get an MTA API Key (free)
+1. Visit [bustime.mta.info](http://bustime.mta.info)
+2. Click "Developer Resources"
+3. Register for a free API key
 
 ---
 
@@ -158,13 +154,13 @@ immediately. Dashboard updates every 60 seconds.
 
 ```bash
 # Clone and enter directory
-git clone https://github.com/yourusername/mta-bus-tracker
-cd mta-bus-tracker
+git clone https://github.com/Malav4217/MTA.git
+cd MTA
 
 # Create virtual environment
 python -m venv .venv
-.venv\Scripts\activate  # Windows
-source .venv/bin/activate  # Mac/Linux
+.venv\Scripts\activate        # Windows
+source .venv/bin/activate     # Mac/Linux
 
 # Install dependencies
 pip install -r requirements.txt
@@ -176,10 +172,10 @@ cp .env.example .env
 # Initialize database
 python database/schema.py
 
-# Run pipeline (terminal 1)
+# Terminal 1 — Run pipeline
 python pipeline.py
 
-# Run dashboard (terminal 2)
+# Terminal 2 — Run dashboard
 streamlit run dashboard/app.py
 ```
 
@@ -191,25 +187,30 @@ streamlit run dashboard/app.py
 # Run all tests
 pytest tests/ -v
 
-# Run with coverage report
+# With coverage report
 pytest tests/ -v --cov=. --cov-report=term-missing
 
 # Run specific test file
 pytest tests/test_data_quality.py -v
 pytest tests/test_detection.py -v
-pytest tests/test_api.py -v
-
-# Expected: 40 passed, 1 skipped
 ```
 
-**Test Coverage:**
+**Expected output:**
+```
+tests/test_api.py::TestMTAAPI::test_api_returns_200 PASSED
+tests/test_data_quality.py::TestRawDataQuality::test_coordinates_within_nyc_bounds PASSED
+tests/test_detection.py::TestHaversineFormula::test_known_distance PASSED
+tests/test_pipeline.py::TestReadReplica::test_reader_db_exists PASSED
+... 36 more tests ...
+======== 40 passed, 1 skipped in 2.66s ========
+```
 
-| Test File | Tests | What It Validates |
-|-----------|-------|-------------------|
-| test_api.py | 5 | MTA API connectivity |
-| test_data_quality.py | 8 | Data completeness and ranges |
-| test_detection.py | 11 | Ghost bus and bunching logic |
-| test_pipeline.py | 11 | Schema, replica, configuration |
+| Test File | Tests | Validates |
+|-----------|-------|-----------|
+| test_api.py | 5 | MTA API connectivity and response format |
+| test_data_quality.py | 8 | Data completeness, ranges, GPS bounds |
+| test_detection.py | 11 | Ghost bus and bunching detection logic |
+| test_pipeline.py | 11 | Schema, read replica, configuration |
 
 ---
 
@@ -243,121 +244,132 @@ docker-compose up --build -d
 ## 📁 Project Structure
 
 ```
-mta-bus-mvp/
-├── pipeline.py              # Master orchestration
-├── config.py                # Settings and constants
-├── requirements.txt         # Dependencies
-├── docker-compose.yml       # Container orchestration
-├── Dockerfile.pipeline      # Pipeline container
-├── Dockerfile.dashboard     # Dashboard container
+MTA/
+├── pipeline.py               # Master orchestration (60s loop)
+├── config.py                 # API keys, routes, constants
+├── requirements.txt          # Dependencies
+├── docker-compose.yml        # Container orchestration
+├── Dockerfile.pipeline       # Pipeline container
+├── Dockerfile.dashboard      # Dashboard container
+├── pytest.ini                # Test configuration
 │
 ├── ingestion/
-│   └── ingest.py           # MTA API polling
+│   └── ingest.py             # MTA API polling
 │
 ├── transforms/
-│   └── transform.py        # Detection algorithms
+│   └── transform.py          # Delay calc + detection algorithms
 │
 ├── database/
-│   ├── schema.py           # Table creation
-│   ├── connection.py       # Connection manager
-│   ├── replica.py          # Read replica pattern
-│   └── add_indexes.py      # Performance indexes
+│   ├── schema.py             # Table creation (auto-runs on start)
+│   ├── connection.py         # Safe query + retry logic
+│   ├── replica.py            # Read replica pattern
+│   └── add_indexes.py        # Performance indexes
 │
 ├── dashboard/
-│   ├── app.py              # Main router (30 lines)
+│   ├── app.py                # Main router (~30 lines)
 │   ├── components/
-│   │   ├── sidebar.py      # Navigation + status
-│   │   ├── cards.py        # UI components
-│   │   └── charts.py       # Chart builders
+│   │   ├── sidebar.py        # Navigation + pipeline status
+│   │   ├── cards.py          # KPI cards, grade cards, UI
+│   │   └── charts.py         # Chart builder functions
 │   └── views/
-│       ├── overview.py     # Overview page
-│       ├── ghost_buses.py  # Ghost Bus page
-│       ├── bunching.py     # Bunching page
-│       ├── route_analysis.py # Analysis page
-│       └── live_map.py     # Live Map page
+│       ├── overview.py       # Overview page
+│       ├── ghost_buses.py    # Ghost Bus Tracker page
+│       ├── bunching.py       # Bus Bunching page
+│       ├── route_analysis.py # Route Analysis page
+│       └── live_map.py       # Live Map page
 │
 ├── airflow/
 │   └── dags/
-│       └── mta_pipeline_dag.py  # Production DAG
+│       └── mta_pipeline_dag.py  # Production Airflow DAG
 │
 └── tests/
-    ├── conftest.py          # Shared fixtures
-    ├── test_api.py          # API tests
-    ├── test_data_quality.py # Data validation
-    ├── test_detection.py    # Algorithm tests
-    └── test_pipeline.py     # Integration tests
+    ├── conftest.py           # Shared fixtures
+    ├── test_api.py           # API connectivity tests
+    ├── test_data_quality.py  # Data validation tests
+    ├── test_detection.py     # Algorithm correctness tests
+    └── test_pipeline.py      # Integration tests
 ```
 
 ---
 
-## 🚀 Production Architecture
+## 🔄 Airflow DAG (Production)
 
-The pipeline is designed for Apache Airflow
-deployment on Linux/cloud infrastructure.
-
-The DAG (`airflow/dags/mta_pipeline_dag.py`)
-defines 4 tasks with automatic retry:
+The pipeline is designed for Apache Airflow deployment with a 4-task DAG:
 
 ```
-ingest_mta_data
-      │
-      ▼
-transform_data
-      │
-      ▼
-update_read_replica
-      │
-      ▼
-health_check
+ingest_mta_data → transform_data → update_read_replica → health_check
 ```
 
-Deploy to: AWS MWAA, Google Cloud Composer,
-or any Linux server running Airflow.
+Each task has automatic retry logic with exponential backoff. The DAG file is at `airflow/dags/mta_pipeline_dag.py` and deploys directly to:
+- **AWS MWAA** (Managed Airflow)
+- **Google Cloud Composer**
+- Any Linux server running Airflow
+
+For local development on Windows, `pipeline.py` uses the `schedule` library as a fallback.
 
 ---
 
-## 📈 Data Quality Approach
+## 📈 Data Quality Engineering
 
-Initial ghost bus detection showed 15,648 events.
-After investigation we found the algorithm was
-counting every raw snapshot instead of tracking
-vehicle completion.
+One of the most important aspects of this project was questioning our own numbers.
 
-Initial bunching detection showed 342 events for B46.
-After applying direction filtering, duplicate removal,
-and 50m minimum distance threshold — the real count
-was 40 (88% false positive reduction).
+### Ghost Bus Investigation
+| Stage | Count | Action |
+|-------|-------|--------|
+| Initial algorithm | 15,648/day | Obviously wrong — investigated |
+| Root cause found | — | Counting snapshots not completions |
+| Fixed algorithm | 45/day | Credible and defensible |
+| Test written | — | Prevents regression forever |
 
-This iterative quality improvement process is
-documented in the test suite which now prevents
-these issues from reoccurring.
+### Bunching Investigation
+| Stage | Count | Filter Applied |
+|-------|-------|---------------|
+| Initial detection | 342 | No filters |
+| After direction filter | 114 | Same DirectionRef only |
+| After 50m minimum | 60 | Eliminates GPS noise |
+| After duplicate filter | 40 | 5-minute window per pair |
+| **Total reduction** | **88%** | **3-layer quality framework** |
 
 ---
 
-## 🔑 Getting an MTA API Key
+## 🚌 Route Performance Summary
 
-1. Visit http://bustime.mta.info
-2. Click "Developer Resources"
-3. Register for a free API key
-4. Add to your .env file
+| Route | On-Time % | Grade | Bunching Severity |
+|-------|-----------|-------|-------------------|
+| BX12 (Bronx) | 68.4% | B | Low (19 events) |
+| M15 (Manhattan) | 67.7% | B | High (87 events) |
+| B46 (Brooklyn) | 55.5% | C | Critical (156 events) |
+| Q58 (Queens) | 37.2% | D | Critical (664 events) |
+
+**Worst stop:** Palmetto St/Myrtle Av on Q58 — **+16.5 min average delay** across **23,728 observations**
+
+---
+
+## 💡 Key Engineering Decisions
+
+**Why DuckDB over PostgreSQL?**
+Zero configuration, no server process, file-based, excellent Pandas integration, and fast analytical queries. Perfect for a solo data engineering project.
+
+**Why the read replica pattern?**
+DuckDB allows only one writer at a time. The dashboard and pipeline both need database access simultaneously. Atomic file copy (shutil.copy2 + os.replace) creates a reader replica with zero downtime — the same pattern as PostgreSQL streaming replication, in 20 lines of Python.
+
+**Why 3-layer bunching filter?**
+Initial detection showed 342 events. Investigation revealed three separate false positive sources: opposite-direction buses, GPS noise at 8-26m, and duplicate pair counting. Each filter addressed one root cause specifically.
 
 ---
 
 ## 📄 License
 
-MIT License — see LICENSE file for details.
+MIT License — see [LICENSE](LICENSE) file for details.
 
 ---
 
 ## 🙏 Acknowledgments
 
-- MTA Bus Time API for providing real-time data
-- DuckDB team for the excellent analytical database
-- Streamlit team for the dashboard framework
+- MTA Bus Time API for providing free real-time transit data
+- DuckDB team for the excellent embedded analytical database
+- Streamlit team for making Python dashboards fast to build
 
 ---
 
-*Built as a data engineering portfolio project
-demonstrating real-time pipeline development,
-data quality engineering, and production-ready
-containerization.*
+*Built as a data engineering portfolio project demonstrating real-time pipeline development, data quality engineering, and production-ready containerization.*
