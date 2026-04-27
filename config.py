@@ -17,13 +17,13 @@ STOP_MONITORING_URL = "http://bustime.mta.info/api/siri/stop-monitoring.json"
 # Routes to track
 TRACKED_ROUTES = ['M15', 'BX12', 'B46', 'Q58']
 
-# Database - works in both local and Docker
-# Docker sets DB_FILE=/app/data/mta_bus.db via environment
-# Local falls back to mta_bus.db in project root
-DB_FILE = os.getenv(
-    'DB_FILE',
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), 'mta_bus.db')
-)
+# Use sample DB on Streamlit Cloud
+# Use full DB locally via Docker
+if os.path.exists('mta_sample.db'):
+    DB_FILE = os.getenv('DB_FILE', 'mta_sample.db')
+else:
+    DB_FILE = os.getenv('DB_FILE', 'mta_bus.db')
+
 READER_DB_FILE = DB_FILE.replace('.db', '_reader.db')
 
 # Pipeline settings

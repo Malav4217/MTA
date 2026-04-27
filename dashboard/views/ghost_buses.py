@@ -18,12 +18,17 @@ def _normalize_route_names(df):
 
 
 def render():
-    today = str(date.today())
+    MIN_DATE = date(2026, 4, 18)
+    MAX_DATE = date(2026, 4, 22)
+    start_date = st.session_state.get('start_date', MIN_DATE)
+    end_date   = st.session_state.get('end_date',   MAX_DATE)
+    start_str  = str(start_date)
+    end_str    = str(end_date)
 
     st.markdown(f"""
     <div style="margin-bottom: 32px;">
       <div style="font-size: 13px; color: #6B6B8A; margin-bottom: 4px;">
-        {datetime.now().strftime('%A, %B %d')} · Live tracking
+        {start_str} → {end_str} · Live tracking
       </div>
       <h1 style="font-family: Bricolage Grotesque; font-size: 36px;
                   font-weight: 700; color: #1A1A2E; margin: 0;">
@@ -57,7 +62,7 @@ def render():
             distance_at_disappear,
             captured_date
         FROM ghost_buses
-        WHERE CAST(captured_date AS DATE) = '{today}'
+        WHERE captured_date BETWEEN DATE '{start_str}' AND DATE '{end_str}'
         ORDER BY last_seen_at DESC
     """)
 
@@ -74,7 +79,8 @@ def render():
         total_df = safe_query(f"""
             SELECT COUNT(DISTINCT vehicle_id)
             FROM raw_bus_snapshots
-            WHERE CAST(captured_at AS DATE) = '{today}'
+            WHERE CAST(captured_at AS DATE)
+                BETWEEN DATE '{start_str}' AND DATE '{end_str}'
         """)
         total_scheduled = int(total_df.iloc[0, 0]) if (
             total_df is not None and not total_df.empty
@@ -119,7 +125,7 @@ def render():
               </div>
               <div style="font-size:13px; color:#6B6B8A;
                           margin-top:4px;">
-                {worst_count} incidents today
+                {worst_count} incidents in range
               </div>
             </div>
             """, unsafe_allow_html=True)
@@ -142,7 +148,7 @@ def render():
               </div>
               <div style="font-size:13px; color:#6B6B8A;
                           margin-top:4px;">
-                of vehicles ghosted today
+                of vehicles ghosted in range
               </div>
             </div>
             """, unsafe_allow_html=True)
@@ -180,4 +186,4 @@ def render():
             </div>
             """, unsafe_allow_html=True)
     else:
-        st.info("No ghost buses detected today!")
+        st.info("No ghost buses detected in selected date range.")

@@ -20,12 +20,17 @@ def _normalize_route_names(df):
 
 
 def render():
-    today = str(date.today())
+    MIN_DATE = date(2026, 4, 18)
+    MAX_DATE = date(2026, 4, 22)
+    start_date = st.session_state.get('start_date', MIN_DATE)
+    end_date   = st.session_state.get('end_date',   MAX_DATE)
+    start_str  = str(start_date)
+    end_str    = str(end_date)
 
     st.markdown(f"""
     <div style="margin-bottom: 32px;">
       <div style="font-size: 13px; color: #6B6B8A; margin-bottom: 4px;">
-        {datetime.now().strftime('%A, %B %d')} · Live tracking
+        {start_str} → {end_str} · Live tracking
       </div>
       <h1 style="font-family: Bricolage Grotesque; font-size: 36px;
                   font-weight: 700; color: #1A1A2E; margin: 0;">
@@ -50,7 +55,11 @@ def render():
     </div>
     """, unsafe_allow_html=True)
 
-    bunching_df = safe_query(f"SELECT * FROM bunching_events WHERE CAST(timestamp AS DATE) = '{today}'")
+    bunching_df = safe_query(f"""
+        SELECT * FROM bunching_events
+        WHERE CAST(timestamp AS DATE)
+            BETWEEN DATE '{start_str}' AND DATE '{end_str}'
+    """)
     if bunching_df is not None:
         bunching_df = _normalize_route_names(bunching_df)
     else:
@@ -107,7 +116,8 @@ def render():
                 EXTRACT(HOUR FROM timestamp) as hour,
                 COUNT(*) as events
             FROM bunching_events
-            WHERE CAST(timestamp AS DATE) = '{today}'
+            WHERE CAST(timestamp AS DATE)
+                BETWEEN DATE '{start_str}' AND DATE '{end_str}'
             GROUP BY hour
             ORDER BY hour
         """)
@@ -122,7 +132,7 @@ def render():
                 bunching_by_hour,
                 x='hour',
                 y='events',
-                title='Bunching events by hour of day (today)',
+                title=f'Bunching events by hour ({start_str} → {end_str})',
                 markers=True
             )
 
@@ -157,4 +167,4 @@ def render():
 
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
     else:
-        st.info("No bunching events today!")
+        st.info("No bunching events in selected date range.")

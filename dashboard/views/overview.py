@@ -35,12 +35,17 @@ def _get_data(table_name, where_clause=None):
 
 
 def render():
-    today = str(date.today())
+    MIN_DATE = date(2026, 4, 18)
+    MAX_DATE = date(2026, 4, 22)
+    start_date = st.session_state.get('start_date', MIN_DATE)
+    end_date   = st.session_state.get('end_date',   MAX_DATE)
+    start_str  = str(start_date)
+    end_str    = str(end_date)
 
     st.markdown(f"""
     <div style="margin-bottom: 32px;">
       <div style="font-size: 13px; color: #6B6B8A; margin-bottom: 4px;">
-        {datetime.now().strftime('%A, %B %d')} · Live dashboard
+        {start_str} → {end_str} · Live dashboard
       </div>
       <h1 style="font-family: Bricolage Grotesque; font-size: 36px;
                   font-weight: 700; color: #1A1A2E; margin: 0;">
@@ -50,7 +55,7 @@ def render():
     """, unsafe_allow_html=True)
 
     arrivals_df = _normalize_route_names(
-        _get_data("bus_arrivals", f"CAST(date AS DATE) = '{today}'")
+        _get_data("bus_arrivals", f"date BETWEEN DATE '{start_str}' AND DATE '{end_str}'")
     )
     if arrivals_df.empty:
         st.warning("No data available yet.")
@@ -62,7 +67,7 @@ def render():
     avg_delay_df = safe_query(f"""
         SELECT ROUND(AVG(delay_minutes), 2) as v
         FROM bus_arrivals
-        WHERE CAST(date AS VARCHAR) = '{today}'
+        WHERE date BETWEEN DATE '{start_str}' AND DATE '{end_str}'
         AND delay_minutes BETWEEN -5 AND 30
     """)
     avg_delay = float(avg_delay_df.iloc[0, 0]) if (
@@ -71,7 +76,7 @@ def render():
     ) else 0.0
 
     ghosts_df = _normalize_route_names(
-        _get_data("ghost_buses", f"CAST(captured_date AS DATE) = '{today}'")
+        _get_data("ghost_buses", f"captured_date BETWEEN DATE '{start_str}' AND DATE '{end_str}'")
     )
     ghost_count = len(ghosts_df) if not ghosts_df.empty else 0
 
@@ -226,7 +231,7 @@ def render():
                 END as category,
                 COUNT(*) as count
             FROM bus_arrivals
-            WHERE CAST(date AS VARCHAR) = '{today}'
+            WHERE date BETWEEN DATE '{start_str}' AND DATE '{end_str}'
             AND delay_minutes BETWEEN -10 AND 60
             GROUP BY category
         """)

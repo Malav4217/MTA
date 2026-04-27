@@ -12,12 +12,17 @@ from dashboard.components.cards import (
 
 
 def render():
-    today = str(date.today())
+    MIN_DATE = date(2026, 4, 18)
+    MAX_DATE = date(2026, 4, 22)
+    start_date = st.session_state.get('start_date', MIN_DATE)
+    end_date   = st.session_state.get('end_date',   MAX_DATE)
+    start_str  = str(start_date)
+    end_str    = str(end_date)
 
     st.markdown(f"""
     <div style="margin-bottom: 32px;">
       <div style="font-size: 13px; color: #6B6B8A; margin-bottom: 4px;">
-        {datetime.now().strftime('%A, %B %d')} · Live analysis
+        {start_str} → {end_str} · Live analysis
       </div>
       <h1 style="font-family: Bricolage Grotesque; font-size: 36px;
                   font-weight: 700; color: #1A1A2E; margin: 0;">
@@ -37,7 +42,7 @@ def render():
                 ROUND(AVG(delay_minutes), 1) as avg_delay,
                 COUNT(*) as arrivals
             FROM bus_arrivals
-            WHERE CAST(date AS VARCHAR) = '{today}'
+            WHERE date BETWEEN DATE '{start_str}' AND DATE '{end_str}'
             AND delay_minutes BETWEEN 0 AND 30
             AND hour IS NOT NULL
             GROUP BY route, hour
@@ -71,10 +76,10 @@ def render():
         <div style="margin: 32px 0 16px;">
           <h2 style="font-family: Bricolage Grotesque; font-size: 22px;
                       font-weight: 700; color: #1A1A2E;">
-            Best time to ride today
+            Best time to ride
           </h2>
           <p style="color: #6B6B8A; font-size: 14px; margin-top: 4px;">
-            Based on average delay per hour across all recorded arrivals
+            Based on average delay per hour across selected date range
           </p>
         </div>
         """, unsafe_allow_html=True)
@@ -171,10 +176,10 @@ def render():
     <div style="margin: 32px 0 16px;">
       <h2 style="font-family: Bricolage Grotesque; font-size: 22px;
                   font-weight: 700; color: #1A1A2E;">
-        Top 5 worst stops today
+        Top 5 worst stops
       </h2>
       <p style="color: #6B6B8A; font-size: 14px; margin-top: 4px;">
-        Stops with highest average delay across all routes
+        Stops with highest average delay across selected date range
       </p>
     </div>
     """, unsafe_allow_html=True)
@@ -187,7 +192,7 @@ def render():
                 ROUND(AVG(delay_minutes), 1) as avg_delay,
                 COUNT(*) as total_arrivals
             FROM bus_arrivals
-            WHERE CAST(date AS VARCHAR) = '{today}'
+            WHERE date BETWEEN DATE '{start_str}' AND DATE '{end_str}'
             AND delay_minutes BETWEEN 0 AND 30
             AND stop_name IS NOT NULL
             AND stop_name != 'Unknown'
@@ -267,7 +272,7 @@ def render():
                 ROUND(AVG(delay_minutes), 1) as avg_delay,
                 COUNT(*) as total_arrivals
             FROM bus_arrivals
-            WHERE CAST(date AS VARCHAR) = '{today}'
+            WHERE date BETWEEN DATE '{start_str}' AND DATE '{end_str}'
             AND delay_minutes BETWEEN 0 AND 30
             AND is_late IS NOT NULL
             GROUP BY route

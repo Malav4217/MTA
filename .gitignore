@@ -1,12 +1,12 @@
-﻿# Database files - NEVER commit these
-*.db
-*.db.tmp
-*.db-wal
-*.db-shm
+﻿# Database files - NEVER commit
 mta_bus.db
 mta_bus_reader.db
+mta_bus_reader.db.tmp
 
-# Environment variables - NEVER commit this
+# Allow sample database for Streamlit Cloud
+!mta_sample.db
+
+# Environment variables - NEVER commit
 .env
 .env.*
 
@@ -14,8 +14,6 @@ mta_bus_reader.db
 __pycache__/
 *.py[cod]
 *.pyo
-*.pyd
-.Python
 
 # Virtual environment
 .venv/
@@ -24,13 +22,20 @@ env/
 
 # Logs
 *.log
-logs/
 ingestion.log
 transforms.log
 
 # Airflow
 airflow/logs/
 airflow/airflow.db
+
+# Coverage
+.coverage
+.coveragerc
+
+# Azure
+__azurite_db_queue__.json
+__azurite_db_queue_extent__.json
 
 # IDE
 .vscode/
@@ -39,6 +44,3 @@ airflow/airflow.db
 # OS
 .DS_Store
 Thumbs.db
-
-# Docker
-.docker/

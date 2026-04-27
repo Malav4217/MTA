@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import datetime
+from datetime import datetime, date
 import pandas as pd
 import sys, os
 from loguru import logger
@@ -138,6 +138,58 @@ def apply_global_styles():
     </style>
     """, unsafe_allow_html=True)
 
+def render_date_filter():
+    """
+    Render date range selector in sidebar.
+    Stores selection in session state.
+    Returns (start_date, end_date) tuple.
+    """
+    st.sidebar.markdown("""
+    <div style="padding:0 8px; margin:16px 0 8px;">
+      <div style="font-size:11px; font-weight:600;
+                  color:#6B6B8A; text-transform:uppercase;
+                  letter-spacing:0.5px; margin-bottom:12px;">
+        Date Range
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    MIN_DATE = date(2026, 4, 18)
+    MAX_DATE = date(2026, 4, 22)
+
+    # Initialize before widget creation — never write after
+    if 'start_date' not in st.session_state:
+        st.session_state['start_date'] = MIN_DATE
+    if 'end_date' not in st.session_state:
+        st.session_state['end_date'] = MAX_DATE
+
+    st.sidebar.date_input(
+        "From",
+        min_value=MIN_DATE,
+        max_value=MAX_DATE,
+        key="start_date"
+    )
+
+    st.sidebar.date_input(
+        "To",
+        min_value=MIN_DATE,
+        max_value=MAX_DATE,
+        key="end_date"
+    )
+
+    start_date = st.session_state['start_date']
+    end_date   = st.session_state['end_date']
+
+    if start_date > end_date:
+        st.sidebar.warning(
+            "Start date must be before end date"
+        )
+        start_date = MIN_DATE
+        end_date   = MAX_DATE
+
+    return start_date, end_date
+
+
 def render_sidebar():
     """Render sidebar. Returns selected page name."""
 
@@ -179,7 +231,20 @@ def render_sidebar():
         "Live Map"
     ])
 
+    # Date range selector
+    st.sidebar.markdown(
+        "<div style='height:1px;background:#E8E6E0;"
+        "margin:16px 0;'></div>",
+        unsafe_allow_html=True
+    )
+    render_date_filter()
+
     # Pipeline status
+    st.sidebar.markdown(
+        "<div style='height:1px;background:#E8E6E0;"
+        "margin:16px 0;'></div>",
+        unsafe_allow_html=True
+    )
     _render_pipeline_status()
 
     return page
