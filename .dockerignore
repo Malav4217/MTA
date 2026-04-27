@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Database files (mounted as volume)
+*.db
+*.db.tmp
+*.db-wal
+*.db-shm
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+
+# Git
+.git/
+.gitignore
+
+# Airflow
+airflow/logs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

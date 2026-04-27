@@ -1,0 +1,32 @@
+# Environment
+.env
+
+# Database files
+*.db
+*.db.tmp
+*.db-wal
+*.db-shm
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Logs
+*.log
+
+# Docker
+.docker/
+
+# Airflow
+airflow/logs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

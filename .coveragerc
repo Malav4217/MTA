@@ -1,0 +1,6 @@
+[run]
+omit =
+    tests/*
+    airflow/*
+    live_map.py
+    pipeline_simple.py

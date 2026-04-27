@@ -1,0 +1,13 @@
+requests
+pandas
+duckdb
+schedule
+streamlit
+plotly
+folium
+python-dotenv
+loguru
+streamlit_folium
+streamlit-autorefresh==0.0.1
+pytest==7.4.0
+pytest-cov==4.1.0

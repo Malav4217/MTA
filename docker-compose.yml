@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+
+  pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile.pipeline
+    container_name: mta_pipeline
+    volumes:
+      - db_data:/app/data
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      - DB_FILE=/app/data/mta_bus.db
+      - PYTHONPATH=/app
+    restart: unless-stopped
+    networks:
+      - mta_network
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import duckdb; duckdb.connect('/app/data/mta_bus.db')"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    container_name: mta_dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - db_data:/app/data
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      - DB_FILE=/app/data/mta_bus.db
+      - PYTHONPATH=/app
+    depends_on:
+      pipeline:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - mta_network
+
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  mta_network:
+    driver: bridge
