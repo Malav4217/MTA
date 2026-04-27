@@ -141,39 +141,53 @@ def apply_global_styles():
 def render_date_filter():
     """
     Render date range selector in sidebar.
-    Stores selection in session state.
     Returns (start_date, end_date) tuple.
     """
+    from config import DATE_CONFIG
+    cfg = DATE_CONFIG
+
+    if cfg['is_sample']:
+        st.sidebar.markdown("""
+        <div style="background:#FEF3C7;
+                    border:1px solid #FCD34D;
+                    border-radius:10px;
+                    padding:10px 12px;
+                    margin:8px 8px 12px;
+                    font-size:12px;
+                    color:#92400E;">
+          📊 <b>Demo mode</b><br>
+          Showing historical data from<br>
+          Apr 18-22, 2026 (800K arrivals)
+        </div>
+        """, unsafe_allow_html=True)
+
     st.sidebar.markdown("""
-    <div style="padding:0 8px; margin:16px 0 8px;">
+    <div style="padding:0 8px; margin:8px 0;">
       <div style="font-size:11px; font-weight:600;
                   color:#6B6B8A; text-transform:uppercase;
-                  letter-spacing:0.5px; margin-bottom:12px;">
+                  letter-spacing:0.5px; margin-bottom:8px;">
         Date Range
       </div>
     </div>
     """, unsafe_allow_html=True)
 
-    MIN_DATE = date(2026, 4, 18)
-    MAX_DATE = date(2026, 4, 22)
-
-    # Initialize before widget creation — never write after
+    # Initialize before widget creation — never write after instantiation
     if 'start_date' not in st.session_state:
-        st.session_state['start_date'] = MIN_DATE
+        st.session_state['start_date'] = cfg['start_date']
     if 'end_date' not in st.session_state:
-        st.session_state['end_date'] = MAX_DATE
+        st.session_state['end_date'] = cfg['end_date']
 
     st.sidebar.date_input(
         "From",
-        min_value=MIN_DATE,
-        max_value=MAX_DATE,
+        min_value=cfg['min_date'],
+        max_value=cfg['max_date'],
         key="start_date"
     )
 
     st.sidebar.date_input(
         "To",
-        min_value=MIN_DATE,
-        max_value=MAX_DATE,
+        min_value=cfg['min_date'],
+        max_value=cfg['max_date'],
         key="end_date"
     )
 
@@ -181,11 +195,9 @@ def render_date_filter():
     end_date   = st.session_state['end_date']
 
     if start_date > end_date:
-        st.sidebar.warning(
-            "Start date must be before end date"
-        )
-        start_date = MIN_DATE
-        end_date   = MAX_DATE
+        st.sidebar.warning("Start must be before end date")
+        start_date = cfg['start_date']
+        end_date   = cfg['end_date']
 
     return start_date, end_date
 

@@ -35,10 +35,9 @@ def _get_data(table_name, where_clause=None):
 
 
 def render():
-    MIN_DATE = date(2026, 4, 18)
-    MAX_DATE = date(2026, 4, 22)
-    start_date = st.session_state.get('start_date', MIN_DATE)
-    end_date   = st.session_state.get('end_date',   MAX_DATE)
+    from config import DATE_CONFIG
+    start_date = st.session_state.get('start_date', DATE_CONFIG['start_date'])
+    end_date   = st.session_state.get('end_date',   DATE_CONFIG['end_date'])
     start_str  = str(start_date)
     end_str    = str(end_date)
 
