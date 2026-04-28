@@ -1,4 +1,4 @@
-# 🚌 NYC MTA Bus Reliability Tracker
+# NYC MTA Bus Reliability Tracker
 
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat&logo=python&logoColor=white)](https://python.org)
 [![DuckDB](https://img.shields.io/badge/DuckDB-0.9.2-FFF000?style=flat&logo=duckdb&logoColor=black)](https://duckdb.org)
@@ -11,21 +11,21 @@
 
 ---
 
-## 📊 Key Findings
+## Key Findings
 *8 days of continuous data collection — 926,551 arrivals analyzed*
 
 | Metric | Value |
 |--------|-------|
-| 🕐 System on-time rate | **64.6%** |
-| 👻 Ghost buses per day | **45 detected** |
-| 🚌 Worst bunching route | **Q58 — 664 events/day (Critical)** |
-| ⏱️ Worst stop avg delay | **+16.5 min (Palmetto St/Myrtle Av, Q58)** |
-| 🎯 False positive reduction | **88% (342 events → 40 after 3-layer filter)** |
-| 📦 Total arrivals analyzed | **926,551+** |
+| System on-time rate | **64.6%** |
+| Ghost buses per day | **45 detected** |
+| Worst bunching route | **Q58 — 664 events/day (Critical)** |
+| Worst stop avg delay | **+16.5 min (Palmetto St/Myrtle Av, Q58)** |
+| False positive reduction | **88% (342 events → 40 after 3-layer filter)** |
+| Total arrivals analyzed | **926,551+** |
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 MTA Bus Time API (SIRI)
@@ -67,16 +67,16 @@ MTA Bus Time API (SIRI)
 
 ---
 
-## 🔍 What We Detect
+## What We Detect
 
-### 👻 Ghost Buses
+### Ghost Buses
 A bus appears in the MTA app with a promised arrival time then vanishes before reaching the stop — leaving riders stranded with zero warning.
 
 **Detection logic:** Track vehicle presence across API polls. Flag vehicles that disappear while still more than 500m from their promised stop, with a gap of more than 10 minutes.
 
 > Initial count: **15,648 events** (obviously wrong) → After fixing algorithm: **45 credible detections per day**
 
-### 🚌 Bus Bunching
+### Bus Bunching
 When buses cluster together instead of staying evenly spaced. You wait 20 minutes then 3 buses arrive at once.
 
 **Detection logic:** Haversine formula calculates great-circle distance between all vehicle pairs on same route and direction. Three quality filters applied:
@@ -87,12 +87,12 @@ When buses cluster together instead of staying evenly spaced. You wait 20 minute
 
 > Initial count: **342 events** → After 3-layer filter: **40 real events** (88% reduction)
 
-### ⏱️ Schedule Delays
+### Schedule Delays
 Delay in minutes = `expected_arrival - aimed_arrival` from the MTA API, classified into 5 categories: Early, On Time, Slightly Late, Late, Very Late (20+ min).
 
 ---
 
-## 🖥️ Dashboard Pages
+## Dashboard Pages
 
 | Page | What It Shows |
 |------|--------------|
@@ -104,7 +104,7 @@ Delay in minutes = `expected_arrival - aimed_arrival` from the MTA API, classifi
 
 ---
 
-## ⚙️ Tech Stack
+## Tech Stack
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
@@ -122,7 +122,7 @@ Delay in minutes = `expected_arrival - aimed_arrival` from the MTA API, classifi
 
 ---
 
-## 🐳 Quick Start with Docker
+## Quick Start with Docker
 
 **Requirements:** Docker Desktop installed
 
@@ -150,7 +150,7 @@ That's it. The pipeline starts collecting data immediately. Dashboard updates ev
 
 ---
 
-## 💻 Local Development Setup
+## Local Development Setup
 
 ```bash
 # Clone and enter directory
@@ -181,7 +181,7 @@ streamlit run dashboard/app.py
 
 ---
 
-## 🧪 Running Tests
+## Running Tests
 
 ```bash
 # Run all tests
@@ -214,7 +214,7 @@ tests/test_pipeline.py::TestReadReplica::test_reader_db_exists PASSED
 
 ---
 
-## 🐳 Docker Commands
+## Docker Commands
 
 ```bash
 # Check container status
@@ -241,7 +241,7 @@ docker-compose up --build -d
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 MTA/
@@ -292,7 +292,7 @@ MTA/
 
 ---
 
-## 🔄 Airflow DAG (Production)
+## Airflow DAG (Production)
 
 The pipeline is designed for Apache Airflow deployment with a 4-task DAG:
 
@@ -309,7 +309,7 @@ For local development on Windows, `pipeline.py` uses the `schedule` library as a
 
 ---
 
-## 📈 Data Quality Engineering
+## Data Quality Engineering
 
 One of the most important aspects of this project was questioning our own numbers.
 
@@ -332,7 +332,7 @@ One of the most important aspects of this project was questioning our own number
 
 ---
 
-## 🚌 Route Performance Summary
+## Route Performance Summary
 
 | Route | On-Time % | Grade | Bunching Severity |
 |-------|-----------|-------|-------------------|
@@ -345,7 +345,7 @@ One of the most important aspects of this project was questioning our own number
 
 ---
 
-## 💡 Key Engineering Decisions
+## Key Engineering Decisions
 
 **Why DuckDB over PostgreSQL?**
 Zero configuration, no server process, file-based, excellent Pandas integration, and fast analytical queries. Perfect for a solo data engineering project.
@@ -358,13 +358,13 @@ Initial detection showed 342 events. Investigation revealed three separate false
 
 ---
 
-## 📄 License
+## License
 
 MIT License — see [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - MTA Bus Time API for providing free real-time transit data
 - DuckDB team for the excellent embedded analytical database

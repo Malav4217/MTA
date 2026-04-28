@@ -79,7 +79,7 @@ def get_live_map_html(api_key, selected_routes, buses):
                         font-weight: bold;
                         border: 2px solid white;
                         box-shadow: 0 2px 6px rgba(0,0,0,0.5);
-                    ">🚌</div>`,
+                    ">B</div>`,
                     iconSize: [28, 28],
                     iconAnchor: [14, 14]
                 }});
@@ -93,11 +93,11 @@ def get_live_map_html(api_key, selected_routes, buses):
                     var popup = `
                         <div style="font-family:monospace;min-width:180px">
                             <b style="color:${{color}}">Route ${{bus.route}}</b><br>
-                            🚌 ${{bus.vehicle_id}}<br>
-                            📍 ${{bus.stop_name}}<br>
-                            📏 ${{bus.distance}}<br>
-                            🕐 Scheduled: ${{bus.aimed.substring(11,16) || 'N/A'}}<br>
-                            ⏱ Expected: ${{bus.expected.substring(11,16) || 'N/A'}}
+                            Vehicle: ${{bus.vehicle_id}}<br>
+                            Stop: ${{bus.stop_name}}<br>
+                            Distance: ${{bus.distance}}<br>
+                            Scheduled: ${{bus.aimed.substring(11,16) || 'N/A'}}<br>
+                            Expected: ${{bus.expected.substring(11,16) || 'N/A'}}
                         </div>`;
 
                     if (markers[id]) {{

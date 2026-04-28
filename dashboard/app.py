@@ -21,7 +21,7 @@ from dashboard.views import (
 def main():
     st.set_page_config(
         page_title="NYC Bus Reliability Tracker",
-        page_icon="🚌",
+        page_icon=None,
         layout="wide",
         initial_sidebar_state="expanded"
     )

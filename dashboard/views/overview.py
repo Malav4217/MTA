@@ -19,11 +19,11 @@ def _normalize_route_names(df):
 
 
 def _get_route_grade(on_time_pct):
-    if on_time_pct > 80:  return 'A', '🟩'
-    if on_time_pct >= 60: return 'B', '🟢'
-    if on_time_pct >= 40: return 'C', '🟡'
-    if on_time_pct >= 20: return 'D', '🟠'
-    return 'F', '🔴'
+    if on_time_pct > 80:  return 'A', ''
+    if on_time_pct >= 60: return 'B', ''
+    if on_time_pct >= 40: return 'C', ''
+    if on_time_pct >= 20: return 'D', ''
+    return 'F', ''
 
 
 def _get_data(table_name, where_clause=None):
@@ -242,8 +242,8 @@ def render():
         delay_dist['pct'] = (delay_dist['count'] / total * 100).round(1)
 
         category_config = {
-            'Early':        {'color': '#2563EB', 'bg': '#DBEAFE', 'icon': '⚡',  'desc': 'Arrived ahead of schedule'},
-            'On time':      {'color': '#16A34A', 'bg': '#DCFCE7', 'icon': '✓',   'desc': 'Within 5 min of schedule'},
+            'Early':        {'color': '#2563EB', 'bg': '#DBEAFE', 'icon': '&lt;',  'desc': 'Arrived ahead of schedule'},
+            'On time':      {'color': '#16A34A', 'bg': '#DCFCE7', 'icon': 'OK',  'desc': 'Within 5 min of schedule'},
             'Slightly late':{'color': '#D97706', 'bg': '#FEF3C7', 'icon': '!',   'desc': '5 to 10 min behind'},
             'Late':         {'color': '#EA580C', 'bg': '#FED7AA', 'icon': '!!',  'desc': '10 to 20 min behind'},
             'Very late':    {'color': '#DC2626', 'bg': '#FEE2E2', 'icon': '!!!', 'desc': 'More than 20 min late'},
@@ -332,7 +332,15 @@ def render():
         <div style="background: #F5F4F0; border-radius: 14px;
                     padding: 16px 20px; margin-top: 4px;
                     display: flex; align-items: center; gap: 12px;">
-          <div style="font-size: 24px;">💡</div>
+          <div style="flex-shrink:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"
+                 viewBox="0 0 24 24" fill="none" stroke="#6B6B8A"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+          </div>
           <div style="font-size: 14px; color: #1A1A2E; line-height: 1.6;">
             <strong>{good_pct}%</strong> of buses arrive on time or early today.
             <strong style="color: #DC2626;">{very_late_pct}%</strong> are

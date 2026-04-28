@@ -127,7 +127,7 @@ def clean_and_calculate_delays(con):
         FROM df
     """)
     
-    logger.info(f"✅ Saved {len(df)} new arrivals to bus_arrivals.")
+    logger.info(f"Saved {len(df)} new arrivals to bus_arrivals.")
 
 
 def detect_bunching(con):

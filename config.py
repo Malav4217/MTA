@@ -16,6 +16,9 @@ TRACKED_ROUTES = ['M15', 'BX12', 'B46', 'Q58']
 
 # Pipeline settings
 DATA_COLLECTION_INTERVAL_SECONDS = 60
+HAVERSINE_DISTANCE_THRESHOLD_METERS = 500
+DELAY_THRESHOLD_MINUTES = 5
+EARLY_THRESHOLD_MINUTES = -2
 
 # ─── Smart Database Detection ────────────────────────
 # Priority order:

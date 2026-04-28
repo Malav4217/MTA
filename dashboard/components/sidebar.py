@@ -155,9 +155,9 @@ def render_date_filter():
                     margin:8px 8px 12px;
                     font-size:12px;
                     color:#92400E;">
-          📊 <b>Demo mode</b><br>
+          <b>Demo mode</b><br>
           Showing historical data from<br>
-          Apr 18-22, 2026 (800K arrivals)
+          Apr 18–22, 2026 (800K arrivals)
         </div>
         """, unsafe_allow_html=True)
 
@@ -210,9 +210,19 @@ def render_sidebar():
     <div style="padding:8px 16px 24px;
                 border-bottom:1px solid #E8E6E0;
                 margin-bottom:16px;">
-      <div style="font-family:Bricolage Grotesque;
-                  font-size:22px; font-weight:700;
-                  color:#1A1A2E;">NYC Bus</div>
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:2px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+             viewBox="0 0 24 24" fill="none" stroke="#1A1A2E"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="3" width="15" height="13" rx="2"/>
+          <path d="M16 8h4l3 3v5h-7V8z"/>
+          <circle cx="5.5" cy="18.5" r="2.5"/>
+          <circle cx="18.5" cy="18.5" r="2.5"/>
+        </svg>
+        <span style="font-family:Bricolage Grotesque;
+                     font-size:18px; font-weight:700;
+                     color:#1A1A2E;">NYC Bus Reliability</span>
+      </div>
       <div style="display:flex; align-items:center;
                   gap:6px; margin-top:4px;">
         <span style="width:8px; height:8px;

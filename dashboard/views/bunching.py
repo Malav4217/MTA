@@ -41,7 +41,17 @@ def render():
     st.markdown("""
     <div style="background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 16px;
                 padding: 20px 24px; margin-bottom: 24px; display: flex; gap: 16px;">
-      <div style="font-size: 24px; flex-shrink: 0;">🚌</div>
+      <div style="flex-shrink:0; width:36px; height:36px;
+                  display:flex; align-items:center; justify-content:center;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+             viewBox="0 0 24 24" fill="none" stroke="#C2410C"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="3" width="15" height="13" rx="2"/>
+          <path d="M16 8h4l3 3v5h-7V8z"/>
+          <circle cx="5.5" cy="18.5" r="2.5"/>
+          <circle cx="18.5" cy="18.5" r="2.5"/>
+        </svg>
+      </div>
       <div>
         <div style="font-weight: 600; color: #C2410C; margin-bottom: 4px; font-size: 15px;">
           What is bus bunching?
